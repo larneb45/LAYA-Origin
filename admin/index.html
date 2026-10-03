@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LAYA Origin — Console d'Administration GitOps</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-cream: #FAF7F2;
+      --bg-card: #FFFFFF;
+      --text-main: #2D312E;
+      --text-muted: #6B726E;
+      --pastel-green: #D8E2DC;
+      --pastel-green-dark: #8FA89B;
+      --pastel-rose: #FFE5D9;
+      --pastel-lavender: #E8E8E4;
+      --accent: #4A6B5D;
+      --accent-hover: #3A554A;
+      --danger: #D96B6B;
+      --border: #E8E5DF;
+      --radius: 16px;
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-cream);
+      color: var(--text-main);
+      padding: 24px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--pastel-green-dark), var(--accent));
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 20px;
+    }
+
+    .brand h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.5px;
+    }
+
+    .brand p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .live-pill {
+      background: var(--pastel-rose);
+      color: #9C4141;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #D96B6B;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    .card h2 {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 680px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      header { flex-direction: column; align-items: flex-start; gap: 12px; }
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #FAF9F6;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      background: #FFF;
+    }
+
+    .hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      background: var(--pastel-green);
+      color: var(--accent);
+    }
+
+    .btn-secondary:hover {
+      background: #CBD8D0;
+    }
+
+    .btn-danger {
+      background: #FEEBEB;
+      color: var(--danger);
+    }
+
+    .btn-danger:hover {
+      background: #FBD5D5;
+    }
+
+    .btn-icon {
+      padding: 6px 10px;
+      font-size: 13px;
+      border-radius: 8px;
+    }
+
+    .notice {
+      background: #F3F7F5;
+      border-left: 4px solid var(--accent);
+      padding: 12px 16px;
+      border-radius: 0 10px 10px 0;
+      margin-bottom: 18px;
+      font-size: 13px;
+      color: var(--accent);
+    }
+
+    .track-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .track-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: #FAF9F6;
+      border: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+
+    .track-item:hover {
+      background: #F4F1EA;
+    }
+
+    .track-info {
+      flex: 1;
+      overflow: hidden;
+      margin-right: 12px;
+    }
+
+    .track-title {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-main);
+    }
+
+    .track-url {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .track-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .status-alert {
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .status-success {
+      background: #E8F5E9;
+      color: #2E7D32;
+      border: 1px solid #C8E6C9;
+      display: block;
+    }
+
+    .status-error {
+      background: #FFEBEE;
+      color: #C62828;
+      border: 1px solid #FFCDD2;
+      display: block;
+    }
+
+    .audio-player-preview {
+      width: 100%;
+      margin-top: 10px;
+      height: 32px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="brand-badge">LO</div>
+        <div>
+          <h1>LAYA Origin</h1>
+          <p>Administration GitOps &bull; Webradio Serverless</p>
+        </div>
+      </div>
+      <div>
+        <span class="live-pill"><span class="live-dot"></span> GitHub Synced</span>
+      </div>
+    </header>
+
+    <div id="statusAlert" class="status-alert"></div>
+
+    <!-- Configuration GitHub -->
+    <div class="card">
+      <h2>Connexion GitHub GitOps</h2>
+      <div class="grid-2">
+        <div class="form-group">
+          <label for="repoInput">Dépôt GitHub (owner/repo)</label>
+          <input type="text" id="repoInput" value="larneb45/LAYA-Origin" placeholder="owner/repo">
+          <div class="hint">Dépôt public hébergeant la playlist.json</div>
+        </div>
+        <div class="form-group">
+          <label for="branchInput">Branche</label>
+          <input type="text" id="branchInput" value="main" placeholder="main">
+          <div class="hint">Branche principale du dépôt</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="patInput">Personal Access Token (PAT) GitHub</label>
+        <input type="password" id="patInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+        <div class="hint">Nécessite les permissions <code>repo</code> ou <code>contents:write</code> pour commiter sur le dépôt. Stocké uniquement dans votre navigateur.</div>
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap;">
+        <button class="btn btn-secondary" onclick="fetchPlaylist()">
+          &circlearrowright; Charger depuis GitHub
+        </button>
+        <button class="btn btn-secondary" onclick="importFromReleases()" style="background: #E3EDE7;">
+          ✨ Importer depuis les GitHub Releases
+        </button>
+        <button class="btn btn-primary" onclick="saveGithubConfig()">
+          Enregistrer le Token
+        </button>
+      </div>
+    </div>
+
+    <!-- Guide Releases -->
+    <div class="notice">
+      <strong>Architecture 100 % gratuite :</strong> Hébergez vos fichiers MP3 dans les <em>Releases</em> de votre dépôt GitHub (onglet "Releases" &gt; "Draft a new release" &gt; attachez vos MP3). Récupérez l'URL directe (ex: <code>https://github.com/larneb45/LAYA-Origin/releases/download/.../music.mp3</code>) et ajoutez-la ci-dessous !
+    </div>
+
+    <!-- Ajouter une musique -->
+    <div class="card">
+      <h2>Ajouter un titre à la webradio</h2>
+      <div class="grid-2">
+        <div class="form-group">
+          <label for="newTitle">Titre du morceau</label>
+          <input type="text" id="newTitle" placeholder="Ex: Horizon Lointain - Live Sunset">
+        </div>
+        <div class="form-group">
+          <label for="newArtist">Artiste / Émission</label>
+          <input type="text" id="newArtist" value="LAYA Origin" placeholder="LAYA Origin">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="newUrl">URL directe du fichier MP3</label>
+        <input type="text" id="newUrl" placeholder="https://github.com/larneb45/LAYA-Origin/releases/download/v1/track.mp3">
+        <div class="hint">Fichier audio direct (.mp3, .ogg, .aac, .m4a)</div>
+      </div>
+      <button class="btn btn-primary" onclick="addTrack()">
+        + Ajouter à la file d'attente
+      </button>
+    </div>
+
+    <!-- Liste des musiques -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>Titres en rotation (<span id="trackCount">0</span>)</h2>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-secondary btn-icon" onclick="simulateMidnightMix()" title="Tester le Mix de Minuit">
+            Tester Mix de Minuit
+          </button>
+          <button class="btn btn-primary" id="commitBtn" onclick="commitToGithub()">
+            Commiter vers GitHub (GitOps)
+          </button>
+        </div>
+      </div>
+
+      <div id="trackList" class="track-list">
+        <div style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 20px;">
+          Chargement de la playlist...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let playlist = [];
+    let currentSha = null;
+
+    // Initialisation
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedPat = localStorage.getItem('laya_pat');
+      const savedRepo = localStorage.getItem('laya_repo');
+      const savedBranch = localStorage.getItem('laya_branch');
+      if (savedPat) document.getElementById('patInput').value = savedPat;
+      if (savedRepo) document.getElementById('repoInput').value = savedRepo;
+      if (savedBranch) document.getElementById('branchInput').value = savedBranch;
+
+      fetchPlaylist();
+    });
+
+    async function importFromReleases() {
+      const repo = document.getElementById('repoInput').value.trim() || 'larneb45/LAYA-Origin';
+      const pat = document.getElementById('patInput').value.trim();
+      const headers = { 'Accept': 'application/vnd.github.v3+json' };
+      if (pat) headers['Authorization'] = `token ${pat}`;
+
+      showStatus("Scan des Releases GitHub en cours...");
+      try {
+        const res = await fetch(`https://api.github.com/repos/${repo}/releases`, { headers });
+        if (!res.ok) throw new Error("Impossible de lire les releases : " + res.statusText);
+        const releases = await res.json();
+        let count = 0;
+        releases.forEach(rel => {
+          if (rel.assets && Array.isArray(rel.assets)) {
+            rel.assets.forEach(asset => {
+              if (asset.name.endsWith('.mp3') || asset.name.endsWith('.ogg') || asset.name.endsWith('.m4a')) {
+                const rawName = asset.name.replace(/\.mp3$|\.ogg$|\.m4a$/i, '');
+                const cleanTitle = rawName.replace(/[._-]+/g, ' ').trim();
+                if (!playlist.some(p => p.url === asset.browser_download_url)) {
+                  playlist.push({
+                    id: asset.id || (Date.now() + Math.floor(Math.random() * 1000)),
+                    title: cleanTitle,
+                    artist: "LAYA Origin",
+                    url: asset.browser_download_url
+                  });
+                  count++;
+                }
+              }
+            });
+          }
+        });
+        renderPlaylist();
+        showStatus(`${count} musiques importées depuis vos Releases GitHub ! Cliquez sur 'Commiter vers GitHub' pour les sauvegarder.`);
+      } catch (err) {
+        showStatus("Erreur import releases: " + err.message, true);
+      }
+    }
+
+    function showStatus(message, isError = false) {
+      const alert = document.getElementById('statusAlert');
+      alert.className = 'status-alert ' + (isError ? 'status-error' : 'status-success');
+      alert.textContent = message;
+      alert.style.display = 'block';
+      setTimeout(() => { alert.style.display = 'none'; }, 6000);
+    }
+
+    function saveGithubConfig() {
+      const pat = document.getElementById('patInput').value.trim();
+      const repo = document.getElementById('repoInput').value.trim();
+      const branch = document.getElementById('branchInput').value.trim();
+      localStorage.setItem('laya_pat', pat);
+      localStorage.setItem('laya_repo', repo);
+      localStorage.setItem('laya_branch', branch);
+      showStatus('Configuration GitHub enregistrée localement.');
+    }
+
+    async function fetchPlaylist() {
+      const repo = document.getElementById('repoInput').value.trim() || 'larneb45/LAYA-Origin';
+      const branch = document.getElementById('branchInput').value.trim() || 'main';
+      const pat = document.getElementById('patInput').value.trim();
+
+      const headers = { 'Accept': 'application/vnd.github.v3+json' };
+      if (pat) headers['Authorization'] = `token ${pat}`;
+
+      try {
+        const url = `https://api.github.com/repos/${repo}/contents/playlist.json?ref=${branch}`;
+        const response = await fetch(url, { headers });
+        if (response.ok) {
+          const data = await response.json();
+          currentSha = data.sha;
+          const decoded = decodeURIComponent(escape(atob(data.content.replace(/\s/g, ''))));
+          playlist = JSON.parse(decoded);
+          renderPlaylist();
+          showStatus(`Playlist chargée avec succès depuis GitHub (${playlist.length} titres).`);
+        } else {
+          // Fallback sur raw ou fichier local
+          const rawUrl = `https://raw.githubusercontent.com/${repo}/${branch}/playlist.json`;
+          const rawRes = await fetch(rawUrl);
+          if (rawRes.ok) {
+            playlist = await rawRes.json();
+            renderPlaylist();
+            showStatus(`Chargé via URL raw (${playlist.length} titres). Pour commiter, saisissez un PAT valide.`);
+          } else {
+            // Fallback playlist par défaut
+            playlist = [
+              { id: 1, title: "Midnight Reflections", artist: "LAYA Origin", url: "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3" },
+              { id: 2, title: "Zen Garden Dawn", artist: "LAYA Origin", url: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3" },
+              { id: 3, title: "Solar Wind Echoes", artist: "LAYA Origin", url: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3" }
+            ];
+            renderPlaylist();
+            showStatus("Playlist locale par défaut initialisée.", false);
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        showStatus("Impossible de joindre GitHub : " + err.message, true);
+      }
+    }
+
+    function renderPlaylist() {
+      const container = document.getElementById('trackList');
+      document.getElementById('trackCount').textContent = playlist.length;
+
+      if (!playlist.length) {
+        container.innerHTML = `<div style="text-align: center; padding: 20px; color: var(--text-muted);">Aucune piste dans la playlist.</div>`;
+        return;
+      }
+
+      container.innerHTML = playlist.map((item, index) => `
+        <div class="track-item">
+          <div class="track-info">
+            <div class="track-title">${index + 1}. ${escapeHtml(item.title || item.titre || 'Sans titre')} ${item.artist ? `<span style="font-weight: 400; color: var(--text-muted); font-size: 12px;">— ${escapeHtml(item.artist)}</span>` : ''}</div>
+            <div class="track-url">${escapeHtml(item.url)}</div>
+          </div>
+          <div class="track-actions">
+            <button class="btn btn-secondary btn-icon" onclick="previewAudio('${item.url}')" title="Écouter">&#9658;</button>
+            <button class="btn btn-secondary btn-icon" onclick="moveTrack(${index}, -1)" ${index === 0 ? 'disabled' : ''}>&uarr;</button>
+            <button class="btn btn-secondary btn-icon" onclick="moveTrack(${index}, 1)" ${index === playlist.length - 1 ? 'disabled' : ''}>&darr;</button>
+            <button class="btn btn-danger btn-icon" onclick="removeTrack(${index})" title="Supprimer">&times;</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function addTrack() {
+      const title = document.getElementById('newTitle').value.trim();
+      const artist = document.getElementById('newArtist').value.trim() || 'LAYA Origin';
+      const url = document.getElementById('newUrl').value.trim();
+
+      if (!title) {
+        alert('Veuillez renseigner un titre.');
+        return;
+      }
+      if (!url || !url.startsWith('http')) {
+        alert('Veuillez renseigner une URL valide (commençant par http).');
+        return;
+      }
+
+      playlist.push({
+        id: Date.now(),
+        title,
+        artist,
+        url
+      });
+
+      document.getElementById('newTitle').value = '';
+      document.getElementById('newUrl').value = '';
+      renderPlaylist();
+      showStatus(`Titre "${title}" ajouté ! N'oubliez pas de commiter vers GitHub.`);
+    }
+
+    function removeTrack(index) {
+      if (confirm(`Supprimer le titre "${playlist[index].title || playlist[index].titre}" ?`)) {
+        playlist.splice(index, 1);
+        renderPlaylist();
+      }
+    }
+
+    function moveTrack(index, direction) {
+      const newIndex = index + direction;
+      if (newIndex < 0 || newIndex >= playlist.length) return;
+      const temp = playlist[index];
+      playlist[index] = playlist[newIndex];
+      playlist[newIndex] = temp;
+      renderPlaylist();
+    }
+
+    let currentAudio = null;
+    function previewAudio(url) {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+      }
+      currentAudio = new Audio(url);
+      currentAudio.play().catch(e => alert("Erreur de lecture audio : " + e.message));
+    }
+
+    // Algorithme de mélange déterministe (Le Mix de Minuit)
+    function simulateMidnightMix() {
+      const today = new Date();
+      const seedStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+      let seed = parseInt(seedStr, 10);
+
+      function pseudoRandom() {
+        seed = (seed * 9301 + 49297) % 233280;
+        return seed / 233280;
+      }
+
+      const shuffled = [...playlist];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(pseudoRandom() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+
+      playlist = shuffled;
+      renderPlaylist();
+      showStatus(`Mix de Minuit simulé pour la graine ${seedStr} !`);
+    }
+
+    // Commit via API REST GitHub
+    async function commitToGithub() {
+      const repo = document.getElementById('repoInput').value.trim() || 'larneb45/LAYA-Origin';
+      const branch = document.getElementById('branchInput').value.trim() || 'main';
+      const pat = document.getElementById('patInput').value.trim();
+
+      if (!pat) {
+        alert("Veuillez saisir votre GitHub Personal Access Token (PAT) pour pouvoir commiter.");
+        return;
+      }
+
+      const commitBtn = document.getElementById('commitBtn');
+      commitBtn.disabled = true;
+      commitBtn.textContent = "Commit en cours...";
+
+      try {
+        const jsonContent = JSON.stringify(playlist, null, 2);
+        const encodedContent = btoa(unescape(encodeURIComponent(jsonContent)));
+
+        const payload = {
+          message: `feat(radio): mise à jour de la playlist LAYA Origin (${playlist.length} titres)`,
+          content: encodedContent,
+          branch: branch
+        };
+        if (currentSha) {
+          payload.sha = currentSha;
+        }
+
+        const url = `https://api.github.com/repos/${repo}/contents/playlist.json`;
+        const res = await fetch(url, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `token ${pat}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          const resData = await res.json();
+          currentSha = resData.content.sha;
+          showStatus(`Commit GitOps réussi sur ${repo} (commit: ${resData.commit.sha.substring(0, 7)}) !`);
+        } else {
+          const errData = await res.json();
+          showStatus(`Échec du commit GitHub (${res.status}) : ${errData.message}`, true);
+        }
+      } catch (err) {
+        showStatus("Erreur réseau lors du commit : " + err.message, true);
+      } finally {
+        commitBtn.disabled = false;
+        commitBtn.textContent = "Commiter vers GitHub (GitOps)";
+      }
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>

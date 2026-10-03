@@ -1,0 +1,6 @@
+{
+  "name": "LAYA Origin",
+  "description": "Webradio LAYA Origin - Lecteur de musique avec Mix de Minuit et architecture Serverless GitHub",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

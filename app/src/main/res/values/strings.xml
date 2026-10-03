@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">LAYA Origin</string>
+    <string name="notification_channel_name">LAYA Origin Radio</string>
+    <string name="notification_channel_desc">Lecture audio en direct et arrière-plan pour LAYA Origin</string>
+</resources>
