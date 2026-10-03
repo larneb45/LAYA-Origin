@@ -27,17 +27,23 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Bedtime
 import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.QueueMusic
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -54,6 +60,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -89,6 +96,8 @@ fun MainPlayerScreen(
     var showAdminSheet by remember { mutableStateOf(false) }
     var showMidnightDialog by remember { mutableStateOf(false) }
     var showSleepTimerDialog by remember { mutableStateOf(false) }
+    var isAdminAuthenticated by remember { mutableStateOf(false) }
+    var showPasswordPrompt by remember { mutableStateOf(false) }
 
     // Request notification permission on Android 13+
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
@@ -148,7 +157,13 @@ fun MainPlayerScreen(
                     Spacer(modifier = Modifier.width(8.dp))
 
                     IconButton(
-                        onClick = { showAdminSheet = true },
+                        onClick = {
+                            if (isAdminAuthenticated) {
+                                showAdminSheet = true
+                            } else {
+                                showPasswordPrompt = true
+                            }
+                        },
                         modifier = Modifier
                             .size(38.dp)
                             .testTag("admin_settings_button")
@@ -444,6 +459,76 @@ fun MainPlayerScreen(
             },
             onRefresh = { viewModel.loadPlaylist(autoPlay = false) },
             onDismiss = { showPlaylistSheet = false }
+        )
+    }
+
+    if (showPasswordPrompt) {
+        var inputPass by remember { mutableStateOf("") }
+        var isPassError by remember { mutableStateOf(false) }
+
+        AlertDialog(
+            onDismissRequest = { showPasswordPrompt = false },
+            containerColor = LinenCream,
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Rounded.Lock, contentDescription = null, tint = SagePrimary)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Accès Administrateur", fontWeight = FontWeight.Bold, color = SageDark)
+                }
+            },
+            text = {
+                Column {
+                    Text(
+                        text = "Veuillez entrer le mot de passe pour accéder à la console GitOps.",
+                        fontSize = 13.sp,
+                        color = TextSecondaryLight
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = inputPass,
+                        onValueChange = {
+                            inputPass = it
+                            isPassError = false
+                        },
+                        label = { Text("Mot de passe") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        isError = isPassError,
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth().testTag("admin_password_field")
+                    )
+                    if (isPassError) {
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = "Mot de passe incorrect.",
+                            fontSize = 12.sp,
+                            color = Color(0xFFC62828)
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (inputPass == "energy") {
+                            isAdminAuthenticated = true
+                            showPasswordPrompt = false
+                            showAdminSheet = true
+                        } else {
+                            isPassError = true
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = SagePrimary),
+                    modifier = Modifier.testTag("admin_password_confirm_button")
+                ) {
+                    Text("Déverrouiller")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showPasswordPrompt = false }) {
+                    Text("Annuler", color = SageDark)
+                }
+            },
+            shape = RoundedCornerShape(16.dp)
         )
     }
 

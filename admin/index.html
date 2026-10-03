@@ -317,16 +317,38 @@
           <p>Administration GitOps &bull; Webradio Serverless</p>
         </div>
       </div>
-      <div>
+      <div style="display: flex; align-items: center; gap: 10px;">
         <span class="live-pill"><span class="live-dot"></span> GitHub Synced</span>
+        <button id="logoutBtn" class="btn btn-secondary btn-icon" style="display: none;" onclick="logoutAdmin()" title="Déconnexion">
+          🔒 Verrouiller
+        </button>
       </div>
     </header>
 
     <div id="statusAlert" class="status-alert"></div>
 
-    <!-- Configuration GitHub -->
-    <div class="card">
-      <h2>Connexion GitHub GitOps</h2>
+    <!-- Écran de connexion sécurisé -->
+    <div id="loginGate" class="card" style="max-width: 420px; margin: 40px auto; text-align: center;">
+      <div style="font-size: 38px; margin-bottom: 12px;">🔒</div>
+      <h2>Accès Administrateur</h2>
+      <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">
+        Veuillez saisir le mot de passe administrateur pour accéder à la console de gestion.
+      </p>
+      <div class="form-group" style="text-align: left;">
+        <label for="adminPass">Mot de passe</label>
+        <input type="password" id="adminPass" placeholder="••••••••" onkeydown="if(event.key==='Enter') verifyPassword()">
+        <div id="loginError" style="color: var(--danger); font-size: 12px; margin-top: 6px; display: none;">Mot de passe incorrect.</div>
+      </div>
+      <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="verifyPassword()">
+        Déverrouiller la Console
+      </button>
+    </div>
+
+    <!-- Contenu Administration protégé -->
+    <div id="adminPanel" style="display: none;">
+      <!-- Configuration GitHub -->
+      <div class="card">
+        <h2>Connexion GitHub GitOps</h2>
       <div class="grid-2">
         <div class="form-group">
           <label for="repoInput">Dépôt GitHub (owner/repo)</label>
@@ -405,14 +427,53 @@
         </div>
       </div>
     </div>
-  </div>
+    </div> <!-- /#adminPanel -->
+  </div> <!-- /.container -->
 
   <script>
+    const ADMIN_PASSWORD = "energy";
     let playlist = [];
     let currentSha = null;
 
-    // Initialisation
+    // Vérification de la session et initialisation
     window.addEventListener('DOMContentLoaded', () => {
+      const isAuth = sessionStorage.getItem('laya_admin_auth') === 'true';
+      if (isAuth) {
+        showAdminPanel();
+      } else {
+        document.getElementById('loginGate').style.display = 'block';
+        document.getElementById('adminPanel').style.display = 'none';
+        document.getElementById('logoutBtn').style.display = 'none';
+      }
+    });
+
+    function verifyPassword() {
+      const input = document.getElementById('adminPass').value;
+      const errorDiv = document.getElementById('loginError');
+      if (input === ADMIN_PASSWORD) {
+        sessionStorage.setItem('laya_admin_auth', 'true');
+        errorDiv.style.display = 'none';
+        showAdminPanel();
+        showStatus('Connexion administrateur réussie.');
+      } else {
+        errorDiv.style.display = 'block';
+      }
+    }
+
+    function logoutAdmin() {
+      sessionStorage.removeItem('laya_admin_auth');
+      document.getElementById('adminPass').value = '';
+      document.getElementById('loginGate').style.display = 'block';
+      document.getElementById('adminPanel').style.display = 'none';
+      document.getElementById('logoutBtn').style.display = 'none';
+      showStatus('Déconnexion effectuée.');
+    }
+
+    function showAdminPanel() {
+      document.getElementById('loginGate').style.display = 'none';
+      document.getElementById('adminPanel').style.display = 'block';
+      document.getElementById('logoutBtn').style.display = 'inline-flex';
+
       const savedPat = localStorage.getItem('laya_pat');
       const savedRepo = localStorage.getItem('laya_repo');
       const savedBranch = localStorage.getItem('laya_branch');
@@ -421,7 +482,7 @@
       if (savedBranch) document.getElementById('branchInput').value = savedBranch;
 
       fetchPlaylist();
-    });
+    }
 
     async function importFromReleases() {
       const repo = document.getElementById('repoInput').value.trim() || 'larneb45/LAYA-Origin';
